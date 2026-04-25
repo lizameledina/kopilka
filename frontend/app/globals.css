@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #999999;
+  --tg-theme-button-color: #2AABEE;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f0f0f0;
+}
+
+body {
+  background-color: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn-primary {
+    @apply w-full py-3 rounded-xl text-lg font-semibold
+      bg-[var(--tg-theme-button-color,#2AABEE)]
+      text-[var(--tg-theme-button-text-color,#ffffff)]
+      disabled:opacity-50 active:scale-95 transition-transform;
+  }
+
+  .btn-secondary {
+    @apply w-full py-3 rounded-xl text-lg font-semibold
+      bg-[var(--tg-theme-secondary-bg-color,#f0f0f0)]
+      text-[var(--tg-theme-text-color,#000)]
+      active:scale-95 transition-transform;
+  }
+
+  .btn-ghost {
+    @apply w-full py-3 rounded-xl text-lg
+      text-[var(--tg-theme-hint-color,#999)];
+  }
+
+  .bg-tg-secondary {
+    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  }
+
+  .bg-tg-button {
+    background-color: var(--tg-theme-button-color, #2AABEE);
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl
+      bg-[var(--tg-theme-secondary-bg-color,#f0f0f0)]
+      text-[var(--tg-theme-text-color,#000)] border-none outline-none text-base;
+  }
+
+  .goal-card {
+    @apply relative overflow-hidden rounded-2xl p-4;
+    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  }
+
+  .goal-card__content {
+    @apply relative;
+  }
+
+  .goal-progress-track {
+    @apply rounded-full h-2 overflow-hidden;
+    background: color-mix(in srgb, var(--tg-theme-text-color, #000) 18%, transparent);
+  }
+
+  .goal-progress-fill {
+    @apply h-full rounded-full transition-all;
+    background: var(--tg-theme-button-color, #2AABEE);
+  }
+
+  .status-badge {
+    @apply inline-flex items-center text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap;
+    background: color-mix(in srgb, var(--tg-theme-bg-color, #fff) 65%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tg-theme-text-color, #000) 12%, transparent);
+  }
+
+  .status-badge--frozen {
+    background: linear-gradient(135deg, rgba(214, 240, 255, 0.55), rgba(207, 226, 255, 0.25));
+    border-color: rgba(125, 190, 255, 0.45);
+    color: color-mix(in srgb, var(--tg-theme-text-color, #000) 92%, #1b4d7a);
+  }
+
+  .status-badge--completed {
+    background: linear-gradient(135deg, rgba(210, 255, 222, 0.55), rgba(200, 255, 222, 0.25));
+    border-color: rgba(110, 220, 150, 0.45);
+  }
+
+  .status-badge--archived {
+    background: color-mix(in srgb, var(--tg-theme-bg-color, #fff) 55%, transparent);
+    opacity: 0.8;
+  }
+
+  .goal-card--frozen {
+    filter: saturate(0.92) contrast(0.98);
+    border: 1px solid rgba(125, 190, 255, 0.25);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 10px 30px rgba(70, 170, 255, 0.10);
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--tg-theme-secondary-bg-color, #f0f0f0) 82%, rgba(210, 240, 255, 0.35)),
+        color-mix(in srgb, var(--tg-theme-secondary-bg-color, #f0f0f0) 82%, rgba(200, 220, 255, 0.18))
+      );
+  }
+
+  .goal-card--frozen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        -35deg,
+        rgba(255, 255, 255, 0.14) 0px,
+        rgba(255, 255, 255, 0.08) 8px,
+        rgba(255, 255, 255, 0.00) 16px,
+        rgba(255, 255, 255, 0.00) 26px
+      ),
+      radial-gradient(120px 80px at 20% 18%, rgba(255,255,255,0.22), transparent 65%),
+      radial-gradient(160px 100px at 85% 30%, rgba(220,245,255,0.18), transparent 70%),
+      radial-gradient(220px 160px at 30% 90%, rgba(210,230,255,0.14), transparent 70%),
+      linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+    mix-blend-mode: soft-light;
+  }
+
+  @supports ((backdrop-filter: blur(6px)) or (-webkit-backdrop-filter: blur(6px))) {
+    .goal-card--frozen::before {
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+  }
+
+  .frozen-banner {
+    @apply rounded-2xl p-4;
+    border: 1px solid rgba(125, 190, 255, 0.35);
+    background: linear-gradient(135deg, rgba(214, 240, 255, 0.55), rgba(207, 226, 255, 0.22));
+  }
+
+  .frozen-primary {
+    background: linear-gradient(135deg, rgba(70, 170, 255, 0.95), rgba(35, 125, 220, 0.95));
+  }
+
+  .frozen-surface {
+    @apply rounded-2xl p-3;
+    border: 1px solid rgba(125, 190, 255, 0.22);
+    background: linear-gradient(135deg, rgba(214, 240, 255, 0.12), rgba(207, 226, 255, 0.06));
+  }
+}

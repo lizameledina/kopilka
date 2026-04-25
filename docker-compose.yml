@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kopilka
+      POSTGRES_USER: kopilka
+      POSTGRES_PASSWORD: kopilka
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  test-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kopilka_test
+      POSTGRES_USER: kopilka
+      POSTGRES_PASSWORD: kopilka
+    ports:
+      - "5434:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://kopilka:kopilka@db:5432/kopilka
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  bot:
+    build: ./bot
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
