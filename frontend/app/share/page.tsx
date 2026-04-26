@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useShareSummary } from "@/lib/hooks";
 import { kopecksToRubles } from "@/lib/format";
@@ -11,6 +11,8 @@ function ShareContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const goalIdParam = searchParams.get("goalId");
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [sharing, setSharing] = useState(false);
 
   const { data: summary, isLoading, error } = useShareSummary(goalIdParam ? Number(goalIdParam) : null);
 
@@ -53,7 +55,7 @@ function ShareContent() {
         <h1 className="text-xl font-bold">Поделиться</h1>
       </div>
 
-      <div id="share-card" className="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 text-white shadow-lg">
+      <div ref={cardRef} id="share-card" className="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 text-white shadow-lg">
         <div className="text-center mb-4">
           <p className="text-3xl mb-2">{stateIcon}</p>
           <h2 className="text-xl font-bold">{summary.title}</h2>
@@ -90,25 +92,39 @@ function ShareContent() {
 
       <div className="mt-auto pt-6 flex flex-col gap-3">
         <button
-          onClick={() => {
-            const header = isCompleted ? "🏆 Цель достигнута!" : isPaused ? "❄️ На паузе" : "🪙 В процессе";
-            const text =
-              `${header}\n` +
-              `${summary.title}\n` +
-              `${kopecksToRubles(summary.saved_amount)} / ${kopecksToRubles(summary.target_amount)} ₽ (${summary.percent}%)\n` +
-              `Конвертов: ${summary.completed_steps}/${summary.total_steps}` +
-              (isCompleted && summary.duration_days != null ? `\nДней: ${summary.duration_days}` : "") +
-              (summary.best_streak > 0 ? `\nРекорд серии: ${summary.best_streak} дней` : "");
-
-            if (navigator.share) {
-              navigator.share({ text }).catch(() => {});
-            } else {
-              navigator.clipboard.writeText(text).then(() => alert("Скопировано!"));
+          disabled={sharing}
+          onClick={async () => {
+            if (!cardRef.current) return;
+            setSharing(true);
+            try {
+              const html2canvas = (await import("html2canvas")).default;
+              const canvas = await html2canvas(cardRef.current, {
+                backgroundColor: null,
+                scale: 2,
+                useCORS: true,
+              });
+              canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                const file = new File([blob], "kopilka.png", { type: "image/png" });
+                if (navigator.share && navigator.canShare?.({ files: [file] })) {
+                  await navigator.share({ files: [file] }).catch(() => {});
+                } else {
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "kopilka.png";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }
+                setSharing(false);
+              }, "image/png");
+            } catch {
+              setSharing(false);
             }
           }}
           className="btn-primary"
         >
-          Поделиться
+          {sharing ? "Создаём картинку..." : "Поделиться"}
         </button>
         <button
           onClick={() => router.back()}

@@ -77,13 +77,13 @@ function CompletionContent() {
 
       {summary.achievements.length > 0 && (
         <div className="mt-6">
-          <p className="text-sm font-semibold mb-2 opacity-70">Достижения</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-sm font-semibold mb-3 opacity-70">Достижения</p>
+          <div className="grid grid-cols-3 gap-2">
             {summary.achievements.map((a) => (
-              <span key={a.code} className="bg-tg-secondary rounded-xl px-3 py-2 text-center">
-                <span className="text-lg">{a.icon}</span>
-                <p className="text-xs">{a.title}</p>
-              </span>
+              <div key={a.code} className="bg-tg-secondary rounded-xl p-3 text-center flex flex-col items-center gap-1">
+                <span className="text-2xl">{a.icon}</span>
+                <p className="text-xs font-medium leading-tight">{a.title}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -91,20 +91,14 @@ function CompletionContent() {
 
       <div className="mt-auto pt-6 flex flex-col gap-3">
         <button
-          onClick={() => router.push(`/history?goalId=${summary.goal_id}`)}
-          className="btn-primary"
-        >
-          Посмотреть историю
-        </button>
-        <button
           onClick={() => router.push(`/share?goalId=${summary.goal_id}`)}
-          className="btn-secondary"
+          className="btn-primary"
         >
           Поделиться результатом
         </button>
         <button
           onClick={() => router.push("/create-goal")}
-          className="w-full py-2 rounded-xl text-sm opacity-70 hover:opacity-100 transition-opacity"
+          className="btn-secondary"
         >
           Создать новую цель
         </button>

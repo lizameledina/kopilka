@@ -96,7 +96,16 @@ function ProgressContent() {
 
       {showActions && (
         <div className="mb-4 goal-card">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <GoalActionButton
+              variant="secondary"
+              onClick={() => {
+                setShowActions(false);
+                router.push(`/edit-goal?goalId=${numericGoalId}`);
+              }}
+            >
+              Редактировать
+            </GoalActionButton>
             {isActive && (
               <GoalActionButton
                 variant="secondary"

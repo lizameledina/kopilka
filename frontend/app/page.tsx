@@ -7,6 +7,7 @@ import { getInitData, ready, waitForTelegramWebApp } from "@/lib/telegram";
 
 export default function WelcomePage() {
   const router = useRouter();
+  const [checking, setChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,6 +26,7 @@ export default function WelcomePage() {
       // Wait a bit for Telegram WebApp/initData to become available.
       await waitForTelegramWebApp(1200);
       if (cancelled) return;
+      setChecking(false);
 
       // If we're not inside Telegram (no initData), do not auto-auth. Keep "Начать" as manual fallback.
       if (!getInitData()) {
@@ -72,6 +74,14 @@ export default function WelcomePage() {
       setLoading(false);
     }
   };
+
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="opacity-50">Загрузка...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-6">

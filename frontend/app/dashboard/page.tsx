@@ -139,7 +139,9 @@ function DashboardContent() {
       ? Math.round((selectedGoal.saved_amount / selectedGoal.target_amount) * 1000) / 10
       : 0;
 
-  const unlockedAchievements = achievements.filter((a) => a.unlocked);
+  const unlockedAchievements = achievements.filter(
+    (a) => a.unlocked && (a.goal_id === null || a.goal_id === selectedGoal.id)
+  );
   const recentAchievements = unlockedAchievements.slice(-3).reverse();
 
   const loading = stepsLoading || (isActive && !todayItem);
