@@ -65,14 +65,6 @@ function AchievementsContent() {
 
     const goalAchievements = scopedResult.data?.goal_achievements || [];
     const globalAchievements = scopedResult.data?.global_achievements || [];
-    const otherGoalAchievements = scopedResult.data?.other_goal_achievements || [];
-
-    const otherGoalMap: Record<string, AchievementItem[]> = {};
-    for (const a of otherGoalAchievements) {
-      const key = a.goal_title || `Цель #${a.goal_id}`;
-      if (!otherGoalMap[key]) otherGoalMap[key] = [];
-      otherGoalMap[key].push(a);
-    }
 
     return (
       <div className="flex flex-col min-h-screen px-6 py-8">
@@ -83,10 +75,6 @@ function AchievementsContent() {
 
         <AchievementSection title="Цель" items={goalAchievements} />
         <AchievementSection title="Общие" items={globalAchievements} />
-
-        {Object.entries(otherGoalMap).map(([title, items]) => (
-          <AchievementSection key={title} title={title} items={items} />
-        ))}
       </div>
     );
   }

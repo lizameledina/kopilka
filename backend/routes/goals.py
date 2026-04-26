@@ -13,6 +13,9 @@ from schemas import (
     ShareSummary,
     HistoryItem,
     GoalAchievementsResponse,
+    EditGoalRequest,
+    EditPreviewResponse,
+    GoalActivityItem,
 )
 from services.goals import (
     create_goal,
@@ -24,11 +27,13 @@ from services.goals import (
     unfreeze_goal,
     goal_to_response,
 )
+from services.goal_edit import edit_goal, preview_goal_edit, reset_goal
 from services.achievements import get_achievements_for_goal, get_all_achievements
 from services.progress import get_progress, get_steps_list
 from services.completion import get_completion_summary, get_share_summary
 from services.history import get_goal_history
-from services.events import emit_pending
+from services.activity import get_goal_activity
+from services.events import emit_pending, PendingEvent, EVENT_GOAL_ARCHIVED
 from routes.deps import get_current_user
 
 router = APIRouter(prefix="/goals", tags=["goals"])
@@ -96,6 +101,88 @@ async def get_goal_endpoint(
     if not goal:
         raise HTTPException(status_code=404, detail="Цель не найдена")
     return goal_to_response(goal)
+
+
+@router.patch("/{goal_id}", response_model=GoalResponse)
+async def edit_goal_endpoint(
+    goal_id: int,
+    request: EditGoalRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        goal, events = await edit_goal(
+            db,
+            goal_id=goal_id,
+            user_id=current_user.id,
+            title=request.title,
+            target_amount=request.target_amount,
+            step_count=request.step_count,
+            distribution=request.distribution,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    await db.commit()
+    await emit_pending(events)
+    return goal_to_response(goal)
+
+
+@router.post("/{goal_id}/edit-preview", response_model=EditPreviewResponse)
+async def edit_preview_endpoint(
+    goal_id: int,
+    request: EditGoalRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await preview_goal_edit(
+        db,
+        goal_id=goal_id,
+        user_id=current_user.id,
+        title=request.title,
+        target_amount=request.target_amount,
+        step_count=request.step_count,
+        distribution=request.distribution,
+    )
+    return EditPreviewResponse(**result)
+
+
+@router.post("/{goal_id}/reset", response_model=GoalResponse)
+async def reset_goal_endpoint(
+    goal_id: int,
+    request: EditGoalRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        goal, events = await reset_goal(
+            db,
+            goal_id=goal_id,
+            user_id=current_user.id,
+            distribution=request.distribution,
+            step_count=request.step_count,
+            target_amount=request.target_amount,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    await db.commit()
+    await emit_pending(events)
+    return goal_to_response(goal)
+
+
+@router.get("/{goal_id}/activity", response_model=list[GoalActivityItem])
+async def get_goal_activity_endpoint(
+    goal_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    goal = await get_goal(db, goal_id, current_user.id)
+    if not goal:
+        raise HTTPException(status_code=404, detail="Цель не найдена")
+
+    items = await get_goal_activity(db, goal_id, current_user.id)
+    return [GoalActivityItem(**item) for item in items]
 
 
 @router.post("/{goal_id}/abandon", response_model=GoalResponse)
@@ -185,6 +272,7 @@ async def delete_goal_endpoint(
         raise HTTPException(status_code=404, detail="Цель не найдена")
 
     await db.commit()
+    await emit_pending([PendingEvent(EVENT_GOAL_ARCHIVED, goal_id=goal_id, user_id=current_user.id)])
     return goal_to_response(goal)
 
 
@@ -228,14 +316,10 @@ async def get_goal_achievements_endpoint(
     goal_achievements = await get_achievements_for_goal(db, current_user.id, goal_id)
     global_achievements = await get_all_achievements(db, current_user.id)
     global_only = [a for a in global_achievements if a["goal_id"] is None]
-    other_goal_achievements = [
-        a for a in global_achievements if a["goal_id"] is not None and a["goal_id"] != goal_id
-    ]
 
     return GoalAchievementsResponse(
         goal_achievements=[AchievementItem(**a) for a in goal_achievements],
         global_achievements=[AchievementItem(**a) for a in global_only],
-        other_goal_achievements=[AchievementItem(**a) for a in other_goal_achievements],
     )
 
 

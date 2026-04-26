@@ -127,7 +127,44 @@ export interface ShareSummary {
 export interface GoalAchievementsResponse {
   goal_achievements: AchievementItem[];
   global_achievements: AchievementItem[];
-  other_goal_achievements: AchievementItem[];
+}
+
+export interface EditGoalRequest {
+  title?: string;
+  target_amount?: number;
+  step_count?: number;
+  distribution?: string;
+  reset?: boolean;
+}
+
+export interface EditPreviewResponse {
+  was: {
+    title: string;
+    target_amount: number;
+    saved_amount: number;
+    step_count: number;
+    completed_steps: number;
+    remaining_steps: number;
+    distribution: string;
+  };
+  will_be: {
+    title: string;
+    target_amount: number;
+    remaining_amount: number;
+    step_count: number;
+    completed_steps: number;
+    remaining_steps: number;
+    distribution: string;
+  };
+  warnings: string[];
+  error: string | null;
+}
+
+export interface GoalActivityItem {
+  event_type: string;
+  title: string;
+  description: string;
+  created_at: string;
 }
 
 export interface HistoryItem {

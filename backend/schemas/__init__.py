@@ -24,7 +24,7 @@ class CreateGoalRequest(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     target_amount: int = Field(ge=100)
     distribution: Literal["equal", "random", "ascending", "descending"] = "equal"
-    step_count: int = Field(ge=1, le=500, default=100)
+    step_count: int = Field(ge=1, le=365, default=100)
 
 
 class GoalResponse(BaseModel):
@@ -142,4 +142,25 @@ class HistoryItem(BaseModel):
 class GoalAchievementsResponse(BaseModel):
     goal_achievements: list[AchievementItem] = []
     global_achievements: list[AchievementItem] = []
-    other_goal_achievements: list[AchievementItem] = []
+
+
+class EditGoalRequest(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=255)
+    target_amount: int | None = Field(None, ge=100)
+    step_count: int | None = Field(None, ge=1, le=365)
+    distribution: Literal["equal", "random", "ascending", "descending"] | None = None
+    reset: bool = False
+
+
+class EditPreviewResponse(BaseModel):
+    was: dict
+    will_be: dict
+    warnings: list[str] = []
+    error: str | None = None
+
+
+class GoalActivityItem(BaseModel):
+    event_type: str
+    title: str
+    description: str
+    created_at: str

@@ -14,6 +14,9 @@ import type {
   HistoryItem,
   Step,
   GoalAchievementsResponse,
+  EditGoalRequest,
+  EditPreviewResponse,
+  GoalActivityItem,
 } from "@/lib/types";
 
 export function useGoals(status?: string) {
@@ -183,6 +186,51 @@ export function useUnfreezeGoal() {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       queryClient.invalidateQueries({ queryKey: ["steps"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });
+    },
+  });
+}
+
+export function useGoalActivity(goalId: number | null) {
+  return useQuery({
+    queryKey: ["activity", "goal", goalId],
+    queryFn: () => api.goals.activity(goalId!),
+    enabled: !!goalId,
+  });
+}
+
+export function useEditGoalPreview() {
+  return useMutation({
+    mutationFn: ({ goalId, body }: { goalId: number; body: EditGoalRequest }) =>
+      api.goals.editPreview(goalId, body),
+  });
+}
+
+export function useEditGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ goalId, body }: { goalId: number; body: EditGoalRequest }) =>
+      api.goals.edit(goalId, body),
+    onSuccess: (_, { goalId }) => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["steps"] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
+      queryClient.invalidateQueries({ queryKey: ["activity", "goal", goalId] });
+    },
+  });
+}
+
+export function useResetGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ goalId, body }: { goalId: number; body: EditGoalRequest }) =>
+      api.goals.reset(goalId, body),
+    onSuccess: (_, { goalId }) => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["steps"] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
+      queryClient.invalidateQueries({ queryKey: ["streak"] });
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
+      queryClient.invalidateQueries({ queryKey: ["activity", "goal", goalId] });
     },
   });
 }

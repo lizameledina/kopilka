@@ -19,7 +19,7 @@ export default function CreateGoalPage() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [distribution, setDistribution] = useState<DistributionType>("equal");
-  const [stepCount, setStepCount] = useState(100);
+  const [stepCount, setStepCount] = useState<string>("100");
   const [error, setError] = useState("");
 
   const isSubmitting = createGoal.isPending;
@@ -35,8 +35,9 @@ export default function CreateGoalPage() {
       setError("Минимальная сумма — 1 рубль");
       return;
     }
-    if (stepCount < 1 || stepCount > 500) {
-      setError("Количество шагов: от 1 до 500");
+    const parsedStepCount = parseInt(stepCount, 10);
+    if (!parsedStepCount || parsedStepCount < 1 || parsedStepCount > 365) {
+      setError("Количество конвертов: от 1 до 365");
       return;
     }
 
@@ -46,7 +47,7 @@ export default function CreateGoalPage() {
         title: title.trim(),
         targetAmount: rublesToKopecks(targetRubles),
         distribution,
-        stepCount,
+        stepCount: parsedStepCount,
       });
       router.push(`/dashboard?goalId=${goal.id}`);
     } catch (e: any) {
@@ -95,19 +96,20 @@ export default function CreateGoalPage() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm mb-1 opacity-70">Количество шагов</label>
+        <label className="block text-sm mb-1 opacity-70">Количество конвертов</label>
         <input
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={stepCount}
-          onChange={(e) => {
-            const v = parseInt(e.target.value);
-            if (!isNaN(v)) setStepCount(v);
+          onChange={(e) => setStepCount(e.target.value.replace(/[^0-9]/g, ""))}
+          onBlur={() => {
+            const n = parseInt(stepCount, 10);
+            if (isNaN(n) || n < 1) setStepCount("1");
+            else if (n > 365) setStepCount("365");
           }}
-          min={1}
-          max={500}
           className="input-field"
         />
-        <p className="text-xs mt-1 opacity-50">От 1 до 500</p>
+        <p className="text-xs mt-1 opacity-50">От 1 до 365</p>
       </div>
 
       <div className="mb-6">
