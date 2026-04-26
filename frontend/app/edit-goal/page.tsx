@@ -235,7 +235,7 @@ function EditGoalContent() {
           disabled={isLoading}
           className="btn-primary mb-3"
         >
-          {formState === "applying" ? "Применяем..." : "Применить изменения"}
+          {"Применить изменения"}
         </button>
       ) : (
         <button

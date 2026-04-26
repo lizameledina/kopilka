@@ -33,7 +33,7 @@ class AchievementQueue {
 
   private _notify(): void {
     const snapshot = [...this.items];
-    for (const l of this.listeners) l(snapshot);
+    this.listeners.forEach(l => l(snapshot));
   }
 }
 
