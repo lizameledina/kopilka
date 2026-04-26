@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: [
-    "https://kopilka-dusky.vercel.app,
+    "https://kopilka-dusky.vercel.app",
   ],
   async rewrites() {
     return [
