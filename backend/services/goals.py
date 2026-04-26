@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import Goal, GoalStatus, Challenge, ChallengeType
+from schemas import GoalResponse
 from services.events import (
     PendingEvent,
     EVENT_GOAL_CREATED,
@@ -12,6 +13,29 @@ from services.challenge_strategies import get_challenge_strategy
 from services.goal_rules import can_freeze, can_unfreeze
 
 MAX_ACTIVE_GOALS = 3
+
+ARCHIVABLE_STATUSES = {
+    GoalStatus.active,
+    GoalStatus.frozen,
+    GoalStatus.abandoned,
+    GoalStatus.completed,
+}
+
+
+def goal_to_response(goal: Goal) -> GoalResponse:
+    status = goal.status
+    # Treat legacy abandoned as frozen in all API responses
+    if status == GoalStatus.abandoned:
+        status = GoalStatus.frozen
+    return GoalResponse(
+        id=goal.id,
+        title=goal.title,
+        target_amount=goal.target_amount,
+        saved_amount=goal.saved_amount,
+        status=status.value,
+        total_steps=goal.total_steps,
+        completed_at=goal.completed_at.isoformat() if goal.completed_at else None,
+    )
 
 
 async def create_goal(
@@ -37,6 +61,7 @@ async def create_goal(
         target_amount=target_amount,
         saved_amount=0,
         status=GoalStatus.active,
+        total_steps=step_count,
     )
     db.add(goal)
     await db.flush()
@@ -99,23 +124,9 @@ async def get_current_goal(db: AsyncSession, user_id: int) -> Goal | None:
     return result.scalar_one_or_none()
 
 
-async def abandon_goal(db: AsyncSession, goal_id: int, user_id: int) -> Goal | None:
-    goal = await get_goal(db, goal_id, user_id)
-    if not goal:
-        return None
-    if goal.status != GoalStatus.active:
-        return None
-    # Legacy endpoint: "abandon" behaves like "freeze"
-    goal.status = GoalStatus.frozen
-    await db.flush()
-    return goal
-
-
 async def archive_goal(db: AsyncSession, goal_id: int, user_id: int) -> Goal | None:
     goal = await get_goal(db, goal_id, user_id)
-    if not goal:
-        return None
-    if goal.status not in (GoalStatus.active, GoalStatus.frozen, GoalStatus.abandoned):
+    if not goal or goal.status not in ARCHIVABLE_STATUSES:
         return None
     goal.status = GoalStatus.archived
     await db.flush()

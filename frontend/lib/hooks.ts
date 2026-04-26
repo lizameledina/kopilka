@@ -126,12 +126,16 @@ export function useCompleteStep() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (stepId: number) => api.steps.complete(stepId),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       queryClient.invalidateQueries({ queryKey: ["steps"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });
       queryClient.invalidateQueries({ queryKey: ["streak"] });
-      void refreshAchievements(queryClient);
+      if (data.newly_unlocked && data.newly_unlocked.length > 0) {
+        pushAchievements(data.newly_unlocked);
+      } else {
+        void refreshAchievements(queryClient);
+      }
     },
   });
 }
@@ -145,7 +149,6 @@ export function useSkipStep() {
       queryClient.invalidateQueries({ queryKey: ["steps"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });
       queryClient.invalidateQueries({ queryKey: ["streak"] });
-      void refreshAchievements(queryClient);
     },
   });
 }

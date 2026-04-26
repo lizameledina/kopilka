@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authenticate, isAuthenticated } from "@/lib/auth";
-import { ready, waitForTelegramWebApp } from "@/lib/telegram";
+import { getInitData, ready, waitForTelegramWebApp } from "@/lib/telegram";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -25,6 +25,12 @@ export default function WelcomePage() {
       // Wait a bit for Telegram WebApp/initData to become available.
       await waitForTelegramWebApp(1200);
       if (cancelled) return;
+
+      // If we're not inside Telegram (no initData), do not auto-auth. Keep "Начать" as manual fallback.
+      if (!getInitData()) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       setError("");

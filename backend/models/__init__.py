@@ -30,6 +30,7 @@ class Goal(Base):
     target_amount: Mapped[int] = mapped_column(BigInteger)
     saved_amount: Mapped[int] = mapped_column(BigInteger, default=0)
     status: Mapped[GoalStatus] = mapped_column(SAEnum(GoalStatus), default=GoalStatus.active, index=True)
+    total_steps: Mapped[int] = mapped_column(Integer, default=100)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

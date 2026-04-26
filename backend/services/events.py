@@ -33,13 +33,15 @@ def on(event_name: str):
 
 async def emit(event_name: str, **kwargs: Any):
     handlers = _handlers.get(event_name, [])
-    for handler in handlers:
+    if not handlers:
+        return
+
+    async def _run(handler: Callable[..., Coroutine]) -> None:
         last_exc: Exception | None = None
         for attempt in range(1, EVENTS_RETRY_ATTEMPTS + 1):
             try:
                 await handler(**kwargs)
-                last_exc = None
-                break
+                return
             except Exception as e:
                 last_exc = e
                 logger.exception(
@@ -52,14 +54,14 @@ async def emit(event_name: str, **kwargs: Any):
                 )
                 if attempt < EVENTS_RETRY_ATTEMPTS and EVENTS_RETRY_BACKOFF_MS > 0:
                     await asyncio.sleep((EVENTS_RETRY_BACKOFF_MS / 1000.0) * (2 ** (attempt - 1)))
-
         if last_exc is not None and EVENTS_FAIL_FAST:
             raise last_exc
 
+    await asyncio.gather(*[_run(h) for h in handlers])
+
 
 async def emit_pending(events: list[PendingEvent]):
-    for event in events:
-        await emit(event.name, **event.kwargs)
+    await asyncio.gather(*[emit(e.name, **e.kwargs) for e in events])
 
 
 EVENT_STEP_COMPLETED = "step_completed"

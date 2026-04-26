@@ -9,17 +9,41 @@ interface ToastItem {
   achievement: AchievementItem;
 }
 
-let globalQueue: AchievementItem[] = [];
-let globalListeners: Array<(queue: AchievementItem[]) => void> = [];
+class AchievementQueue {
+  private items: AchievementItem[] = [];
+  private listeners = new Set<(items: AchievementItem[]) => void>();
+
+  push(newItems: AchievementItem[]): void {
+    this.items.push(...newItems);
+    this._notify();
+  }
+
+  shift(): AchievementItem | undefined {
+    return this.items.shift();
+  }
+
+  get size(): number {
+    return this.items.length;
+  }
+
+  subscribe(listener: (items: AchievementItem[]) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private _notify(): void {
+    const snapshot = [...this.items];
+    for (const l of this.listeners) l(snapshot);
+  }
+}
+
+const achievementQueue = new AchievementQueue();
 
 export function pushAchievements(achievements: AchievementItem[]) {
   const newOnes = findNewAchievements(achievements);
   if (newOnes.length === 0) return;
   markAchievementsSeen(newOnes.map((a) => ({ code: a.code, goal_id: a.goal_id })));
-  globalQueue.push(...newOnes);
-  for (const listener of globalListeners) {
-    listener([...globalQueue]);
-  }
+  achievementQueue.push(newOnes);
 }
 
 export default function AchievementToast() {
@@ -27,18 +51,13 @@ export default function AchievementToast() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const listener = (queue: AchievementItem[]) => {
-      if (!current && queue.length > 0) {
-        const next = queue[0];
+    return achievementQueue.subscribe((items) => {
+      if (!current && items.length > 0) {
+        const next = achievementQueue.shift()!;
         setCurrent({ key: `${next.code}-${Date.now()}`, achievement: next });
         setVisible(true);
-        globalQueue = queue.slice(1);
       }
-    };
-    globalListeners.push(listener);
-    return () => {
-      globalListeners = globalListeners.filter(l => l !== listener);
-    };
+    });
   }, [current]);
 
   useEffect(() => {
@@ -47,9 +66,8 @@ export default function AchievementToast() {
       setVisible(false);
       setTimeout(() => {
         setCurrent(null);
-        if (globalQueue.length > 0) {
-          const next = globalQueue[0];
-          globalQueue = globalQueue.slice(1);
+        if (achievementQueue.size > 0) {
+          const next = achievementQueue.shift()!;
           setCurrent({ key: `${next.code}-${Date.now()}`, achievement: next });
           setVisible(true);
         }

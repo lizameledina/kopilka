@@ -1,10 +1,9 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
-from models import Goal, GoalStatus, User, Challenge
+from models import Goal, GoalStatus, User
 from schemas import (
     CreateGoalRequest,
     GoalResponse,
@@ -23,6 +22,7 @@ from services.goals import (
     archive_goal,
     freeze_goal,
     unfreeze_goal,
+    goal_to_response,
 )
 from services.achievements import get_achievements_for_goal, get_all_achievements
 from services.progress import get_progress, get_steps_list
@@ -33,21 +33,6 @@ from routes.deps import get_current_user
 
 router = APIRouter(prefix="/goals", tags=["goals"])
 logger = logging.getLogger(__name__)
-
-
-async def _goal_to_response(goal: Goal, db: AsyncSession) -> GoalResponse:
-    result = await db.execute(select(Challenge).where(Challenge.goal_id == goal.id))
-    challenge = result.scalar_one_or_none()
-    total_steps = challenge.total_steps if challenge else 100
-    return GoalResponse(
-        id=goal.id,
-        title=goal.title,
-        target_amount=goal.target_amount,
-        saved_amount=goal.saved_amount,
-        status=goal.status.value,
-        total_steps=total_steps,
-        completed_at=goal.completed_at.isoformat() if goal.completed_at else None,
-    )
 
 
 @router.post("", response_model=GoalResponse)
@@ -70,7 +55,7 @@ async def create_goal_endpoint(
 
     await db.commit()
     await emit_pending(events)
-    return await _goal_to_response(goal, db)
+    return goal_to_response(goal)
 
 
 @router.get("", response_model=list[GoalResponse])
@@ -87,11 +72,7 @@ async def list_goals_endpoint(
             raise HTTPException(status_code=400, detail=f"Некорректный статус: {status}")
 
     goals = await get_user_goals(db, current_user.id, status=goal_status)
-    result: list[GoalResponse] = []
-    for goal in goals:
-        resp = await _goal_to_response(goal, db)
-        result.append(resp)
-    return result
+    return [goal_to_response(g) for g in goals]
 
 
 @router.get("/current", response_model=GoalResponse | None)
@@ -102,7 +83,7 @@ async def get_current_goal_endpoint(
     goal = await get_current_goal(db, current_user.id)
     if not goal:
         return None
-    return await _goal_to_response(goal, db)
+    return goal_to_response(goal)
 
 
 @router.get("/{goal_id}", response_model=GoalResponse)
@@ -114,7 +95,7 @@ async def get_goal_endpoint(
     goal = await get_goal(db, goal_id, current_user.id)
     if not goal:
         raise HTTPException(status_code=404, detail="Цель не найдена")
-    return await _goal_to_response(goal, db)
+    return goal_to_response(goal)
 
 
 @router.post("/{goal_id}/abandon", response_model=GoalResponse)
@@ -123,7 +104,7 @@ async def abandon_goal_endpoint(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Legacy endpoint: treat as freeze to avoid breaking old clients.
+    # Legacy endpoint: delegates to freeze
     existing = await get_goal(db, goal_id, current_user.id)
     if not existing:
         raise HTTPException(status_code=404, detail="Цель не найдена")
@@ -134,7 +115,7 @@ async def abandon_goal_endpoint(
 
     await db.commit()
     await emit_pending(events)
-    return await _goal_to_response(goal, db)
+    return goal_to_response(goal)
 
 
 @router.post("/{goal_id}/freeze", response_model=GoalResponse)
@@ -153,7 +134,7 @@ async def freeze_goal_endpoint(
 
     await db.commit()
     await emit_pending(events)
-    return await _goal_to_response(goal, db)
+    return goal_to_response(goal)
 
 
 @router.post("/{goal_id}/unfreeze", response_model=GoalResponse)
@@ -190,7 +171,7 @@ async def unfreeze_goal_endpoint(
 
     await db.commit()
     await emit_pending(events)
-    return await _goal_to_response(goal, db)
+    return goal_to_response(goal)
 
 
 @router.delete("/{goal_id}", response_model=GoalResponse)
@@ -204,7 +185,7 @@ async def delete_goal_endpoint(
         raise HTTPException(status_code=404, detail="Цель не найдена")
 
     await db.commit()
-    return await _goal_to_response(goal, db)
+    return goal_to_response(goal)
 
 
 @router.get("/{goal_id}/progress", response_model=ProgressResponse)

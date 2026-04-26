@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: [
-    "rekindle-sulfite-greeter.ngrok-free.dev",
+    "https://kopilka-dusky.vercel.app,
   ],
   async rewrites() {
     return [

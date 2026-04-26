@@ -1,15 +1,16 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
-from models import User, Goal, Challenge, ChallengeStep
+from models import User, Goal, ChallengeStep
 from routes.deps import get_current_user
-from schemas import StepResponse, StepActionResponse, TodayStepItem
+from schemas import StepResponse, StepActionResponse, TodayStepItem, AchievementItem
 from services.events import emit_pending
 from services.goal_rules import can_mutate_steps, is_paused
 from services.goals import get_goal
 from services.steps import get_today_steps_for_user, get_step_by_id, complete_step, skip_step
+from services.achievements import get_achievements_unlocked_since
 
 router = APIRouter(prefix="/steps", tags=["steps"])
 
@@ -69,16 +70,12 @@ async def get_step_endpoint(
     if not step or not goal:
         raise HTTPException(status_code=404, detail="Шаг не найден")
 
-    challenge_result = await db.execute(select(Challenge).where(Challenge.goal_id == goal.id))
-    challenge = challenge_result.scalar_one_or_none()
-    total_steps = challenge.total_steps if challenge else 100
-
     return StepResponse(
         id=step.id,
         step_number=step.step_number,
         planned_amount=step.planned_amount,
         status=step.status.value,
-        total_steps=total_steps,
+        total_steps=goal.total_steps,
         goal_title=goal.title,
         goal_saved=goal.saved_amount,
         goal_target=goal.target_amount,
@@ -103,6 +100,8 @@ async def complete_step_endpoint(
     if not can_mutate_steps(goal.status):
         raise HTTPException(status_code=400, detail=_goal_mutation_error_detail(goal))
 
+    request_start = datetime.now(timezone.utc)
+
     completed, events = await complete_step(db, step_id, goal.id, current_user.id)
     if not completed:
         raise HTTPException(status_code=404, detail="Шаг не найден")
@@ -110,7 +109,13 @@ async def complete_step_endpoint(
     await db.commit()
     await emit_pending(events)
 
-    return StepActionResponse(id=completed.id, status=completed.status.value)
+    newly_unlocked = await get_achievements_unlocked_since(db, current_user.id, request_start)
+
+    return StepActionResponse(
+        id=completed.id,
+        status=completed.status.value,
+        newly_unlocked=[AchievementItem(**a) for a in newly_unlocked],
+    )
 
 
 @router.post("/{step_id}/skip", response_model=StepActionResponse)
@@ -133,4 +138,3 @@ async def skip_step_endpoint(
     await emit_pending(events)
 
     return StepActionResponse(id=skipped.id, status=skipped.status.value)
-

@@ -55,9 +55,21 @@ class TodayStepItem(BaseModel):
     total_steps: int = 100
 
 
+class AchievementItem(BaseModel):
+    code: str
+    title: str
+    description: str
+    icon: str
+    unlocked: bool
+    unlocked_at: str | None = None
+    goal_id: int | None = None
+    goal_title: str | None = None
+
+
 class StepActionResponse(BaseModel):
     id: int
     status: str
+    newly_unlocked: list[AchievementItem] = []
 
 
 class ProgressResponse(BaseModel):
@@ -76,17 +88,6 @@ class ProgressResponse(BaseModel):
 class StreakResponse(BaseModel):
     current_streak: int
     best_streak: int
-
-
-class AchievementItem(BaseModel):
-    code: str
-    title: str
-    description: str
-    icon: str
-    unlocked: bool
-    unlocked_at: str | None = None
-    goal_id: int | None = None
-    goal_title: str | None = None
 
 
 class ActivityItem(BaseModel):

@@ -38,6 +38,7 @@ export interface Step {
 export interface StepAction {
   id: number;
   status: string;
+  newly_unlocked?: AchievementItem[];
 }
 
 export interface TodayStepItem {
