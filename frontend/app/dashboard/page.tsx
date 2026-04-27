@@ -156,26 +156,42 @@ function DashboardContent() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button onClick={() => router.push("/achievements")} className="w-8 h-8 flex items-center justify-center text-base opacity-60 hover:opacity-100">
-            ⭐
+        {goals.length > 1 && (
+          <button onClick={() => setShowGoalList(!showGoalList)} className="shrink-0 text-lg opacity-70 hover:opacity-100 ml-2">
+            ▾
           </button>
-          <button onClick={() => router.push("/goals")} className="text-sm opacity-70 hover:opacity-100">
-            Все цели
-          </button>
-          {goals.length > 1 && (
-            <button onClick={() => setShowGoalList(!showGoalList)} className="text-lg opacity-70 hover:opacity-100">
-              ▾
-            </button>
-          )}
-        </div>
+        )}
+      </div>
+
+      <div className="bg-tg-secondary rounded-2xl flex mb-4">
+        <button
+          onClick={() => router.push(`/progress?goalId=${selectedGoal.id}`)}
+          className="flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <span className="text-base">📊</span>
+          <span className="text-xs font-medium">Прогресс</span>
+        </button>
+        <button
+          onClick={() => router.push("/goals")}
+          className="flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <span className="text-base">🎯</span>
+          <span className="text-xs font-medium">Все цели</span>
+        </button>
+        <button
+          onClick={() => router.push(selectedGoal ? `/achievements?goalId=${selectedGoal.id}` : "/achievements")}
+          className="flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <span className="text-base">⭐</span>
+          <span className="text-xs font-medium">Достижения</span>
+        </button>
       </div>
 
       {streak && streak.current_streak > 0 && (
         <div className="bg-tg-secondary rounded-xl p-3 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg">🔥</span>
-            <span className="text-sm font-semibold">Серия: {streak.current_streak} дн.</span>
+            <span className="text-sm font-semibold">Серия: {streak.current_streak} {streak.current_streak === 1 ? "день" : streak.current_streak >= 2 && streak.current_streak <= 4 ? "дня" : "дней"}</span>
           </div>
           {streak.best_streak > streak.current_streak && (
             <span className="text-xs opacity-50">Рекорд: {streak.best_streak}</span>
@@ -299,11 +315,6 @@ function DashboardContent() {
         </div>
       )}
 
-      <div className="mt-auto pt-4">
-        <button onClick={() => router.push(`/progress?goalId=${selectedGoal.id}`)} className="w-full py-2 rounded-xl text-sm opacity-70 hover:opacity-100 transition-opacity">
-          Открыть прогресс
-        </button>
-      </div>
     </div>
   );
 }
