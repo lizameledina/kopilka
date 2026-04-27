@@ -156,12 +156,9 @@ function DashboardContent() {
           </div>
         </div>
 
-        <div className="flex gap-2 shrink-0">
-          <button onClick={() => router.push("/achievements")} className="text-sm opacity-70 hover:opacity-100">
+        <div className="flex items-center gap-3 shrink-0">
+          <button onClick={() => router.push("/achievements")} className="w-8 h-8 flex items-center justify-center text-base opacity-60 hover:opacity-100">
             ⭐
-          </button>
-          <button onClick={() => router.push("/settings")} className="text-sm opacity-70 hover:opacity-100">
-            ⚙
           </button>
           <button onClick={() => router.push("/goals")} className="text-sm opacity-70 hover:opacity-100">
             Все цели
@@ -171,6 +168,9 @@ function DashboardContent() {
               ▾
             </button>
           )}
+          <button onClick={() => router.push("/settings")} className="w-8 h-8 flex items-center justify-center text-base opacity-60 hover:opacity-100">
+            ⚙
+          </button>
         </div>
       </div>
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const ONBOARDING_KEY = "kopilka_onboarding_done";
-const markDone = () => sessionStorage.setItem(ONBOARDING_KEY, "1");
+const markDone = () => localStorage.setItem(ONBOARDING_KEY, "1");
 
 const SCREENS = [
   {
@@ -53,49 +53,49 @@ export default function OnboardingPage() {
   const isLast = step === SCREENS.length - 1;
 
   return (
-    <div className="relative flex flex-col items-center min-h-screen px-6 pt-20 pb-8 text-center">
+    <div className="relative flex flex-col min-h-screen px-6 pb-8 text-center">
       <button
         onClick={handleSkip}
-        className="absolute top-6 right-6 text-sm opacity-40 hover:opacity-70 transition-opacity"
+        className="absolute top-6 right-6 text-sm opacity-40 hover:opacity-70 transition-opacity z-10"
       >
         Пропустить
       </button>
 
-      {step === 1 ? (
-        <div
-          onClick={() => setEnvelopeOpen(true)}
-          className={`text-6xl mb-6 w-24 h-24 flex items-center justify-center rounded-2xl bg-tg-secondary cursor-pointer select-none transition-all duration-300 ${
-            envelopeOpen ? "scale-105" : "active:scale-95"
-          }`}
-        >
-          {envelopeOpen ? "📭" : "📬"}
-        </div>
-      ) : (
-        <div className="text-6xl mb-6">{screen.icon}</div>
-      )}
+      <div className="flex-1 flex flex-col items-center justify-center px-2">
+        {step === 1 ? (
+          <div
+            onClick={() => setEnvelopeOpen(true)}
+            className={`text-6xl mb-6 w-24 h-24 flex items-center justify-center rounded-2xl bg-tg-secondary cursor-pointer select-none transition-all duration-300 ${
+              envelopeOpen ? "scale-105" : "active:scale-95"
+            }`}
+          >
+            {envelopeOpen ? "📭" : "📬"}
+          </div>
+        ) : (
+          <div className="text-6xl mb-6">{screen.icon}</div>
+        )}
 
-      {step === 1 && envelopeOpen && (
-        <p className="text-2xl font-bold mb-2 transition-all duration-300">1 000 ₽</p>
-      )}
-      {step === 1 && !envelopeOpen && (
-        <p className="text-xs opacity-40 mb-2">Нажми, чтобы открыть</p>
-      )}
+        {step === 1 && envelopeOpen && (
+          <p className="text-2xl font-bold mb-2 transition-all duration-300">1 000 ₽</p>
+        )}
+        {step === 1 && !envelopeOpen && (
+          <p className="text-xs opacity-40 mb-2">Нажми, чтобы открыть</p>
+        )}
 
-      <h1 className="text-2xl font-bold mb-3">{screen.title}</h1>
-      <p className="text-sm opacity-70 leading-relaxed mb-6 max-w-xs whitespace-pre-line">
-        {screen.body}
-      </p>
+        <h1 className="text-2xl font-bold mb-3">{screen.title}</h1>
+        <p className="text-sm opacity-70 leading-relaxed max-w-xs whitespace-pre-line">
+          {screen.body}
+        </p>
+      </div>
 
-      <div className="flex-1" />
-
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 justify-center mb-6">
         {SCREENS.map((_, i) => (
           <div
             key={i}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            className={`h-2 rounded-full transition-all duration-300 ${
               i === step
                 ? "bg-[var(--tg-theme-button-color,#2AABEE)] w-4"
-                : "bg-[var(--tg-theme-hint-color,#999)]"
+                : "bg-[var(--tg-theme-hint-color,#999)] w-2"
             }`}
           />
         ))}
@@ -105,7 +105,7 @@ export default function OnboardingPage() {
         onClick={isLast ? handleFinish : handleNext}
         className="btn-primary w-full"
       >
-        {isLast ? "Создать цель" : "Дальше"}
+        {isLast ? "Начать" : "Дальше"}
       </button>
     </div>
   );

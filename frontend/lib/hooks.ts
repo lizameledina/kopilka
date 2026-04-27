@@ -219,7 +219,11 @@ export function useResetGoal() {
 export function useReminderSettings() {
   return useQuery({
     queryKey: ["settings", "reminders"],
-    queryFn: () => api.settings.getReminders(),
+    queryFn: () =>
+      api.settings.getReminders().catch(() => ({
+        reminders_enabled: false,
+        reminder_time: "09:00",
+      })),
   });
 }
 

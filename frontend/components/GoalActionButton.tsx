@@ -18,7 +18,7 @@ export default function GoalActionButton({
   className?: string;
 }) {
   const base =
-    "px-3 py-2 rounded-xl text-sm font-semibold transition-opacity active:scale-95";
+    "px-2 py-2 rounded-xl text-sm font-semibold transition-opacity active:scale-95 flex items-center justify-center text-center";
   const styles: Record<Variant, string> = {
     primary:
       "bg-[var(--tg-theme-button-color,#2AABEE)] text-[var(--tg-theme-button-text-color,#fff)]",

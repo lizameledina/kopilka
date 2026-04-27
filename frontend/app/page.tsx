@@ -6,7 +6,7 @@ import { authenticate, isAuthenticated } from "@/lib/auth";
 import { getInitData, ready, waitForTelegramWebApp } from "@/lib/telegram";
 
 const ONBOARDING_KEY = "kopilka_onboarding_done";
-const isOnboardingDone = () => typeof window !== "undefined" && !!sessionStorage.getItem(ONBOARDING_KEY);
+const isOnboardingDone = () => typeof window !== "undefined" && !!localStorage.getItem(ONBOARDING_KEY);
 
 export default function WelcomePage() {
   const router = useRouter();
