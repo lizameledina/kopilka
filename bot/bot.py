@@ -40,19 +40,6 @@ MESSAGES = {
         "Ты отмечаешь, что отложил сумму, и переходишь к следующему шагу.\n\n"
         "Так маленькими действиями ты доходишь до цели."
     ),
-    "reminder_envelope": "Твой конверт ждёт тебя.",
-    "reminder_no_goal": (
-        "У тебя пока нет активной цели.\n\n"
-        "Открой приложение, чтобы создать новую цель или разморозить одну из замороженных."
-    ),
-    "reminder_all_frozen": (
-        "Все цели сейчас заморожены.\n\n"
-        "Открой приложение, чтобы разморозить цель или создать новую."
-    ),
-    "reminder_goal_done": (
-        "Цель достигнута. Отличная работа!\n\n"
-        "Открой приложение, чтобы посмотреть итог или создать новую цель."
-    ),
 }
 
 
@@ -83,13 +70,6 @@ async def cmd_how(message: Message):
 
 
 dp.include_router(router)
-
-
-async def send_reminder_message(telegram_id: int, text: str):
-    try:
-        await bot.send_message(chat_id=telegram_id, text=text, reply_markup=open_app_keyboard())
-    except Exception as e:
-        logger.error(f"Failed to send message to {telegram_id}: {e}")
 
 
 async def main():

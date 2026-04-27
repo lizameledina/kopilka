@@ -168,9 +168,6 @@ function DashboardContent() {
               ▾
             </button>
           )}
-          <button onClick={() => router.push("/settings")} className="w-8 h-8 flex items-center justify-center text-base opacity-60 hover:opacity-100">
-            ⚙
-          </button>
         </div>
       </div>
 

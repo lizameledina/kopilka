@@ -152,13 +152,4 @@ class EditPreviewResponse(BaseModel):
     error: str | None = None
 
 
-class ReminderSettings(BaseModel):
-    reminders_enabled: bool
-    reminder_time: str
-
-
-class UpdateReminderSettings(BaseModel):
-    reminders_enabled: bool
-    reminder_time: str = Field(pattern=r"^\d{2}:\d{2}$")
-
 

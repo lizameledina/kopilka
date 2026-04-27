@@ -15,7 +15,6 @@ import type {
   GoalAchievementsResponse,
   EditGoalRequest,
   EditPreviewResponse,
-  ReminderSettings,
 } from "@/lib/types";
 
 export function useGoals(status?: string) {
@@ -216,23 +215,3 @@ export function useResetGoal() {
   });
 }
 
-export function useReminderSettings() {
-  return useQuery({
-    queryKey: ["settings", "reminders"],
-    queryFn: () =>
-      api.settings.getReminders().catch(() => ({
-        reminders_enabled: false,
-        reminder_time: "09:00",
-      })),
-  });
-}
-
-export function useUpdateReminderSettings() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: ReminderSettings) => api.settings.updateReminders(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["settings", "reminders"] });
-    },
-  });
-}
