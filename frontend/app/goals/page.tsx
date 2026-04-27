@@ -78,6 +78,12 @@ export default function GoalsPage() {
                   <div className="flex gap-2">
                     <GoalActionButton
                       variant="secondary"
+                      onClick={() => router.push(`/edit-goal?goalId=${goal.id}`)}
+                    >
+                      Редактировать
+                    </GoalActionButton>
+                    <GoalActionButton
+                      variant="secondary"
                       onClick={async () => {
                         setActionError("");
                         if (!confirmFreeze()) return;
@@ -130,6 +136,12 @@ export default function GoalsPage() {
                 }}
                 actions={
                   <div className="flex gap-2">
+                    <GoalActionButton
+                      variant="secondary"
+                      onClick={() => router.push(`/edit-goal?goalId=${goal.id}`)}
+                    >
+                      Редактировать
+                    </GoalActionButton>
                     <GoalActionButton
                       variant="primary"
                       onClick={async () => {

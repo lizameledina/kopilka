@@ -11,11 +11,9 @@ from schemas import (
     AchievementItem,
     CompletionSummary,
     ShareSummary,
-    HistoryItem,
     GoalAchievementsResponse,
     EditGoalRequest,
     EditPreviewResponse,
-    GoalActivityItem,
 )
 from services.goals import (
     create_goal,
@@ -31,8 +29,6 @@ from services.goal_edit import edit_goal, preview_goal_edit, reset_goal
 from services.achievements import get_achievements_for_goal, get_all_achievements
 from services.progress import get_progress, get_steps_list
 from services.completion import get_completion_summary, get_share_summary
-from services.history import get_goal_history
-from services.activity import get_goal_activity
 from services.events import emit_pending, PendingEvent, EVENT_GOAL_ARCHIVED
 from routes.deps import get_current_user
 
@@ -170,19 +166,6 @@ async def reset_goal_endpoint(
     await emit_pending(events)
     return goal_to_response(goal)
 
-
-@router.get("/{goal_id}/activity", response_model=list[GoalActivityItem])
-async def get_goal_activity_endpoint(
-    goal_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    goal = await get_goal(db, goal_id, current_user.id)
-    if not goal:
-        raise HTTPException(status_code=404, detail="Цель не найдена")
-
-    items = await get_goal_activity(db, goal_id, current_user.id)
-    return [GoalActivityItem(**item) for item in items]
 
 
 @router.post("/{goal_id}/abandon", response_model=GoalResponse)
@@ -354,26 +337,3 @@ async def get_share_summary_endpoint(
     return ShareSummary(**summary)
 
 
-@router.get("/{goal_id}/history", response_model=list[HistoryItem])
-async def get_history_endpoint(
-    goal_id: int,
-    sort_by: str = Query("date", pattern="^(date|number)$"),
-    status: str | None = Query(None, pattern="^(completed|skipped|recovered)$"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    goal = await get_goal(db, goal_id, current_user.id)
-    if not goal:
-        raise HTTPException(status_code=404, detail="Цель не найдена")
-
-    items = await get_goal_history(
-        db,
-        goal_id,
-        user_id=current_user.id,
-        sort_by=sort_by,
-        status_filter=status,
-    )
-    if items is None:
-        raise HTTPException(status_code=404, detail="Цель не найдена")
-
-    return [HistoryItem(**item) for item in items]

@@ -31,7 +31,6 @@ function ProgressContent() {
   const archiveGoal = useArchiveGoal();
   const freezeGoal = useFreezeGoal();
   const unfreezeGoal = useUnfreezeGoal();
-  const [showActions, setShowActions] = useState(false);
   const [actionError, setActionError] = useState<string>("");
 
   const numericGoalId = goalId ? Number(goalId) : null;
@@ -87,82 +86,9 @@ function ProgressContent() {
         </button>
         <h1 className="text-xl font-bold flex-1 truncate">{progress.title}</h1>
         <GoalStatusBadge status={progress.status} />
-        <button onClick={() => setShowActions(!showActions)} className="text-sm opacity-50">
-          ⋯
-        </button>
       </div>
 
       {actionError && !isPaused ? <p className="text-red-500 text-sm mb-4">{actionError}</p> : null}
-
-      {showActions && (
-        <div className="mb-4 goal-card">
-          <div className="flex gap-2 flex-wrap">
-            <GoalActionButton
-              variant="secondary"
-              onClick={() => {
-                setShowActions(false);
-                router.push(`/edit-goal?goalId=${numericGoalId}`);
-              }}
-            >
-              Редактировать
-            </GoalActionButton>
-            {isActive && (
-              <GoalActionButton
-                variant="secondary"
-                onClick={async () => {
-                  setActionError("");
-                  if (!confirmFreeze()) return;
-                  try {
-                    await freezeGoal.mutateAsync(numericGoalId);
-                    setShowActions(false);
-                    setActionError("");
-                  } catch (e: any) {
-                    setActionError(e?.message || "Ошибка");
-                  }
-                }}
-                disabled={freezeGoal.isPending}
-              >
-                Заморозить
-              </GoalActionButton>
-            )}
-            {isPaused && (
-              <GoalActionButton
-                variant="primary"
-                onClick={async () => {
-                  setActionError("");
-                  try {
-                    await unfreezeGoal.mutateAsync(numericGoalId);
-                    setShowActions(false);
-                    setActionError("");
-                  } catch (e: any) {
-                    setActionError(e?.message || "Ошибка");
-                  }
-                }}
-                disabled={unfreezeGoal.isPending}
-              >
-                Разморозить
-              </GoalActionButton>
-            )}
-            <GoalActionButton
-              variant="danger"
-              onClick={async () => {
-                setActionError("");
-                if (!confirmDelete()) return;
-                try {
-                  await archiveGoal.mutateAsync(numericGoalId);
-                  setActionError("");
-                  router.push("/dashboard");
-                } catch (e: any) {
-                  setActionError(e?.message || "Ошибка");
-                }
-              }}
-              disabled={archiveGoal.isPending}
-            >
-              Удалить
-            </GoalActionButton>
-          </div>
-        </div>
-      )}
 
       {isPaused && (
         <div className="mb-4">
@@ -239,16 +165,71 @@ function ProgressContent() {
         </div>
       </div>
 
-      <div className="mt-4 flex gap-3">
-        <button
-          onClick={() => router.push(`/history?goalId=${progress.goal_id}`)}
-          className="flex-1 py-2 rounded-xl text-sm bg-tg-secondary text-center"
-        >
-          История
-        </button>
+      <div className="mt-6 flex flex-col gap-2">
+        <div className="flex gap-2">
+          <GoalActionButton
+            variant="secondary"
+            onClick={() => router.push(`/edit-goal?goalId=${numericGoalId}`)}
+          >
+            Редактировать
+          </GoalActionButton>
+          {isActive && (
+            <GoalActionButton
+              variant="secondary"
+              onClick={async () => {
+                setActionError("");
+                if (!confirmFreeze()) return;
+                try {
+                  await freezeGoal.mutateAsync(numericGoalId);
+                  setActionError("");
+                } catch (e: any) {
+                  setActionError(e?.message || "Ошибка");
+                }
+              }}
+              disabled={freezeGoal.isPending}
+            >
+              Заморозить
+            </GoalActionButton>
+          )}
+          {isPaused && (
+            <GoalActionButton
+              variant="primary"
+              onClick={async () => {
+                setActionError("");
+                try {
+                  await unfreezeGoal.mutateAsync(numericGoalId);
+                  setActionError("");
+                } catch (e: any) {
+                  setActionError(e?.message || "Ошибка");
+                }
+              }}
+              disabled={unfreezeGoal.isPending}
+            >
+              Разморозить
+            </GoalActionButton>
+          )}
+          <GoalActionButton
+            variant="danger"
+            onClick={async () => {
+              setActionError("");
+              if (!confirmDelete()) return;
+              try {
+                await archiveGoal.mutateAsync(numericGoalId);
+                setActionError("");
+                router.push("/dashboard");
+              } catch (e: any) {
+                setActionError(e?.message || "Ошибка");
+              }
+            }}
+            disabled={archiveGoal.isPending}
+          >
+            Удалить
+          </GoalActionButton>
+        </div>
+
         <button
           onClick={() => router.push(`/share?goalId=${progress.goal_id}`)}
-          className="flex-1 py-2 rounded-xl text-sm bg-tg-secondary text-center"
+          className="w-full py-2 rounded-xl text-sm bg-tg-secondary text-center"
         >
           Поделиться
         </button>

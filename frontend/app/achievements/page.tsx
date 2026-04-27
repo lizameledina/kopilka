@@ -7,11 +7,11 @@ import type { AchievementItem } from "@/lib/types";
 
 function AchievementCard({ a, locked }: { a: AchievementItem; locked: boolean }) {
   return (
-    <div className={`bg-tg-secondary rounded-xl p-4 flex items-center gap-3 ${locked ? "opacity-40" : ""}`}>
-      <span className={`text-2xl ${locked ? "grayscale" : ""}`}>{a.icon}</span>
+    <div className={`bg-tg-secondary rounded-xl p-4 flex items-center gap-3 min-h-[60px] ${locked ? "opacity-40" : ""}`}>
+      <span className={`text-2xl shrink-0 ${locked ? "grayscale" : ""}`}>{a.icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm">{a.title}</p>
-        <p className="text-xs opacity-50">{a.description}</p>
+        <p className="font-semibold text-sm line-clamp-1">{a.title}</p>
+        <p className="text-xs opacity-50 line-clamp-2">{a.description}</p>
       </div>
       {a.unlocked_at && !locked && (
         <span className="text-xs opacity-30 whitespace-nowrap">

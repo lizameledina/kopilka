@@ -11,12 +11,10 @@ import type {
   AchievementItem,
   CompletionSummary,
   ShareSummary,
-  HistoryItem,
   Step,
   GoalAchievementsResponse,
   EditGoalRequest,
   EditPreviewResponse,
-  GoalActivityItem,
 } from "@/lib/types";
 
 export function useGoals(status?: string) {
@@ -82,14 +80,6 @@ export function useShareSummary(goalId: number | null) {
   return useQuery({
     queryKey: ["share", goalId],
     queryFn: () => api.goals.shareSummary(goalId!),
-    enabled: !!goalId,
-  });
-}
-
-export function useHistory(goalId: number | null, sort?: string, status?: string) {
-  return useQuery({
-    queryKey: ["history", goalId, sort, status],
-    queryFn: () => api.goals.history(goalId!, sort, status),
     enabled: !!goalId,
   });
 }
@@ -190,14 +180,6 @@ export function useUnfreezeGoal() {
   });
 }
 
-export function useGoalActivity(goalId: number | null) {
-  return useQuery({
-    queryKey: ["activity", "goal", goalId],
-    queryFn: () => api.goals.activity(goalId!),
-    enabled: !!goalId,
-  });
-}
-
 export function useEditGoalPreview() {
   return useMutation({
     mutationFn: ({ goalId, body }: { goalId: number; body: EditGoalRequest }) =>
@@ -210,11 +192,10 @@ export function useEditGoal() {
   return useMutation({
     mutationFn: ({ goalId, body }: { goalId: number; body: EditGoalRequest }) =>
       api.goals.edit(goalId, body),
-    onSuccess: (_, { goalId }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       queryClient.invalidateQueries({ queryKey: ["steps"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });
-      queryClient.invalidateQueries({ queryKey: ["activity", "goal", goalId] });
     },
   });
 }
@@ -224,13 +205,12 @@ export function useResetGoal() {
   return useMutation({
     mutationFn: ({ goalId, body }: { goalId: number; body: EditGoalRequest }) =>
       api.goals.reset(goalId, body),
-    onSuccess: (_, { goalId }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       queryClient.invalidateQueries({ queryKey: ["steps"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });
       queryClient.invalidateQueries({ queryKey: ["streak"] });
       queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      queryClient.invalidateQueries({ queryKey: ["activity", "goal", goalId] });
     },
   });
 }

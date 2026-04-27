@@ -248,9 +248,9 @@ async def reset_goal(
     challenge = await _get_challenge(db, goal_id)
     old_saved = goal.saved_amount
 
-    # Delete all steps, deposits, and goal-scoped achievements
-    await db.execute(delete(ChallengeStep).where(ChallengeStep.goal_id == goal_id))
+    # Delete deposits before steps (FK: Deposit.step_id → ChallengeStep.id)
     await db.execute(delete(Deposit).where(Deposit.goal_id == goal_id))
+    await db.execute(delete(ChallengeStep).where(ChallengeStep.goal_id == goal_id))
     await db.execute(
         delete(UserAchievement).where(
             UserAchievement.goal_id == goal_id,

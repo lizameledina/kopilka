@@ -218,11 +218,18 @@ function EditGoalContent() {
                   </>
                 )}
               </div>
-              <p className="text-xs opacity-50">
-                Осталось: {preview.will_be.remaining_steps} конвертов на {kopecksToRubles(preview.will_be.remaining_amount)} ₽
-              </p>
+              <div className="border-t border-white/10 pt-3 mt-1 flex flex-col gap-1 text-xs">
+                {preview.was.completed_steps > 0 && (
+                  <p className="opacity-60">
+                    ✓ Выполнено: {preview.was.completed_steps} конв. — не изменятся
+                  </p>
+                )}
+                <p className="opacity-80">
+                  ↻ Осталось: {preview.will_be.remaining_steps} конв. на {kopecksToRubles(preview.will_be.remaining_amount)} ₽ — пересчитаются
+                </p>
+              </div>
               {preview.warnings.map((w, i) => (
-                <p key={i} className="text-yellow-400 text-xs mt-1">⚠ {w}</p>
+                <p key={i} className="text-yellow-400 text-xs mt-2">⚠ {w}</p>
               ))}
             </>
           )}

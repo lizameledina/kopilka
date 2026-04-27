@@ -1,4 +1,4 @@
-import { AuthResponse, Goal, Step, StepAction, Progress, TodayStepItem, DistributionType, Streak, AchievementItem, ActivityItem, CompletionSummary, ShareSummary, HistoryItem, GoalAchievementsResponse, EditGoalRequest, EditPreviewResponse, GoalActivityItem } from "./types";
+import { AuthResponse, Goal, Step, StepAction, Progress, TodayStepItem, DistributionType, Streak, AchievementItem, ActivityItem, CompletionSummary, ShareSummary, GoalAchievementsResponse, EditGoalRequest, EditPreviewResponse } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const IS_BROWSER = typeof window !== "undefined";
@@ -132,13 +132,6 @@ export const api = {
       request<CompletionSummary>(`/goals/${goalId}/completion`),
     shareSummary: (goalId: number) =>
       request<ShareSummary>(`/goals/${goalId}/share-summary`),
-    history: (goalId: number, sort?: string, status?: string) => {
-      const params = new URLSearchParams();
-      if (sort) params.set("sort_by", sort);
-      if (status) params.set("status", status);
-      const qs = params.toString();
-      return request<HistoryItem[]>(`/goals/${goalId}/history${qs ? `?${qs}` : ""}`);
-    },
     edit: (goalId: number, body: EditGoalRequest) =>
       request<Goal>(`/goals/${goalId}`, {
         method: "PATCH",
@@ -154,8 +147,6 @@ export const api = {
         method: "POST",
         body: JSON.stringify(body),
       }),
-    activity: (goalId: number) =>
-      request<GoalActivityItem[]>(`/goals/${goalId}/activity`),
   },
   steps: {
     today: () => request<TodayStepItem[]>("/steps/today"),

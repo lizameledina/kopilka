@@ -160,18 +160,3 @@ export interface EditPreviewResponse {
   error: string | null;
 }
 
-export interface GoalActivityItem {
-  event_type: string;
-  title: string;
-  description: string;
-  created_at: string;
-}
-
-export interface HistoryItem {
-  id: number;
-  step_number: number;
-  planned_amount: number;
-  status: string;
-  label: string;
-  completed_at: string | null;
-}

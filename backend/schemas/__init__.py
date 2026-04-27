@@ -130,15 +130,6 @@ class ShareSummary(BaseModel):
     best_streak: int
 
 
-class HistoryItem(BaseModel):
-    id: int
-    step_number: int
-    planned_amount: int
-    status: str
-    label: str
-    completed_at: str | None = None
-
-
 class GoalAchievementsResponse(BaseModel):
     goal_achievements: list[AchievementItem] = []
     global_achievements: list[AchievementItem] = []
@@ -159,8 +150,3 @@ class EditPreviewResponse(BaseModel):
     error: str | None = None
 
 
-class GoalActivityItem(BaseModel):
-    event_type: str
-    title: str
-    description: str
-    created_at: str
