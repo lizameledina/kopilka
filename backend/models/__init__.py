@@ -99,6 +99,9 @@ class User(Base):
     first_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     timezone: Mapped[str] = mapped_column(String(50), default="UTC")
+    reminders_enabled: Mapped[bool] = mapped_column(default=False)
+    reminder_time: Mapped[str] = mapped_column(String(5), default="09:00")
+    last_reminder_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

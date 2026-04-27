@@ -1,4 +1,4 @@
-import { AuthResponse, Goal, Step, StepAction, Progress, TodayStepItem, DistributionType, Streak, AchievementItem, ActivityItem, CompletionSummary, ShareSummary, GoalAchievementsResponse, EditGoalRequest, EditPreviewResponse } from "./types";
+import { AuthResponse, Goal, Step, StepAction, Progress, TodayStepItem, DistributionType, Streak, AchievementItem, ActivityItem, CompletionSummary, ShareSummary, GoalAchievementsResponse, EditGoalRequest, EditPreviewResponse, ReminderSettings } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const IS_BROWSER = typeof window !== "undefined";
@@ -164,5 +164,13 @@ export const api = {
   },
   activity: {
     list: (limit: number = 20) => request<ActivityItem[]>(`/activity?limit=${limit}`),
+  },
+  settings: {
+    getReminders: () => request<ReminderSettings>("/settings/reminders"),
+    updateReminders: (body: ReminderSettings) =>
+      request<ReminderSettings>("/settings/reminders", {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }),
   },
 };

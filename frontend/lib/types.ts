@@ -139,6 +139,11 @@ export interface EditGoalRequest {
   reset?: boolean;
 }
 
+export interface ReminderSettings {
+  reminders_enabled: boolean;
+  reminder_time: string;
+}
+
 export interface EditPreviewResponse {
   was: {
     title: string;

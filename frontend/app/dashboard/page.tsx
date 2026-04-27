@@ -160,6 +160,9 @@ function DashboardContent() {
           <button onClick={() => router.push("/achievements")} className="text-sm opacity-70 hover:opacity-100">
             ⭐
           </button>
+          <button onClick={() => router.push("/settings")} className="text-sm opacity-70 hover:opacity-100">
+            ⚙
+          </button>
           <button onClick={() => router.push("/goals")} className="text-sm opacity-70 hover:opacity-100">
             Все цели
           </button>
