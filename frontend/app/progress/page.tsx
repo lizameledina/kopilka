@@ -166,74 +166,78 @@ function ProgressContent() {
       </div>
 
       <div className="mt-6 flex flex-col gap-2">
-        <GoalActionButton
-          variant="secondary"
-          className="w-full"
-          onClick={() => router.push(`/edit-goal?goalId=${numericGoalId}`)}
-        >
-          Редактировать
-        </GoalActionButton>
-        {isActive && (
+        <div className="flex gap-2">
           <GoalActionButton
             variant="secondary"
-            className="w-full"
-            onClick={async () => {
-              setActionError("");
-              if (!confirmFreeze()) return;
-              try {
-                await freezeGoal.mutateAsync(numericGoalId);
-                setActionError("");
-              } catch (e: any) {
-                setActionError(e?.message || "Ошибка");
-              }
-            }}
-            disabled={freezeGoal.isPending}
+            className="flex-1"
+            onClick={() => router.push(`/edit-goal?goalId=${numericGoalId}`)}
           >
-            Заморозить
+            Редактировать
           </GoalActionButton>
-        )}
-        {isPaused && (
+          {isActive && (
+            <GoalActionButton
+              variant="secondary"
+              className="flex-1"
+              onClick={async () => {
+                setActionError("");
+                if (!confirmFreeze()) return;
+                try {
+                  await freezeGoal.mutateAsync(numericGoalId);
+                  setActionError("");
+                } catch (e: any) {
+                  setActionError(e?.message || "Ошибка");
+                }
+              }}
+              disabled={freezeGoal.isPending}
+            >
+              Заморозить
+            </GoalActionButton>
+          )}
+          {isPaused && (
+            <GoalActionButton
+              variant="primary"
+              className="flex-1"
+              onClick={async () => {
+                setActionError("");
+                try {
+                  await unfreezeGoal.mutateAsync(numericGoalId);
+                  setActionError("");
+                } catch (e: any) {
+                  setActionError(e?.message || "Ошибка");
+                }
+              }}
+              disabled={unfreezeGoal.isPending}
+            >
+              Разморозить
+            </GoalActionButton>
+          )}
+        </div>
+        <div className="flex gap-2">
           <GoalActionButton
-            variant="primary"
-            className="w-full"
+            variant="danger"
+            className="flex-1"
             onClick={async () => {
               setActionError("");
+              if (!confirmDelete()) return;
               try {
-                await unfreezeGoal.mutateAsync(numericGoalId);
+                await archiveGoal.mutateAsync(numericGoalId);
                 setActionError("");
+                router.push("/dashboard");
               } catch (e: any) {
                 setActionError(e?.message || "Ошибка");
               }
             }}
-            disabled={unfreezeGoal.isPending}
+            disabled={archiveGoal.isPending}
           >
-            Разморозить
+            Удалить
           </GoalActionButton>
-        )}
-        <GoalActionButton
-          variant="danger"
-          className="w-full"
-          onClick={async () => {
-            setActionError("");
-            if (!confirmDelete()) return;
-            try {
-              await archiveGoal.mutateAsync(numericGoalId);
-              setActionError("");
-              router.push("/dashboard");
-            } catch (e: any) {
-              setActionError(e?.message || "Ошибка");
-            }
-          }}
-          disabled={archiveGoal.isPending}
-        >
-          Удалить
-        </GoalActionButton>
-        <button
-          onClick={() => router.push(`/share?goalId=${progress.goal_id}`)}
-          className="w-full py-2 rounded-xl text-sm bg-tg-secondary text-center"
-        >
-          Поделиться
-        </button>
+          <button
+            onClick={() => router.push(`/share?goalId=${progress.goal_id}`)}
+            className="flex-1 py-2 rounded-xl text-sm bg-tg-secondary text-center"
+          >
+            Поделиться
+          </button>
+        </div>
       </div>
     </div>
   );

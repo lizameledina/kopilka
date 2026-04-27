@@ -52,14 +52,32 @@ async def get_today_steps_for_user(
             next_step_per_goal[step.goal_id] = step
             seen_goals.add(step.goal_id)
 
+    goals_without_pending = [g.id for g in active_goals if g.id not in next_step_per_goal]
+    skipped_step_per_goal: dict[int, ChallengeStep] = {}
+    if goals_without_pending:
+        skipped_result = await db.execute(
+            select(ChallengeStep)
+            .where(
+                ChallengeStep.goal_id.in_(goals_without_pending),
+                ChallengeStep.status == StepStatus.skipped,
+            )
+            .order_by(ChallengeStep.goal_id, ChallengeStep.step_number)
+        )
+        seen_skip: set[int] = set()
+        for step in skipped_result.scalars().all():
+            if step.goal_id not in seen_skip:
+                skipped_step_per_goal[step.goal_id] = step
+                seen_skip.add(step.goal_id)
+
     result = []
     for goal in active_goals:
         challenge = challenges.get(goal.id)
         total_steps = challenge.total_steps if challenge else 100
+        step = next_step_per_goal.get(goal.id) or skipped_step_per_goal.get(goal.id)
         result.append({
             "goal_id": goal.id,
             "goal_title": goal.title,
-            "step": next_step_per_goal.get(goal.id),
+            "step": step,
             "total_steps": total_steps,
         })
     return result

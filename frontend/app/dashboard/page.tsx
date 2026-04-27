@@ -42,7 +42,7 @@ function DashboardContent() {
     }
   }, [goals, selectedGoalId]);
 
-  if (goalsLoading || (goalsFetching && allGoals.length === 0)) {
+  if (goalsLoading || goalsFetching) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="opacity-50">Загрузка...</p>
@@ -158,7 +158,7 @@ function DashboardContent() {
 
         <div className="flex gap-2 shrink-0">
           <button onClick={() => router.push("/achievements")} className="text-sm opacity-70 hover:opacity-100">
-            🏆
+            ⭐
           </button>
           <button onClick={() => router.push("/goals")} className="text-sm opacity-70 hover:opacity-100">
             Все цели
@@ -242,13 +242,24 @@ function DashboardContent() {
           </div>
         ) : step ? (
           <div className="goal-card">
-            <p className="text-sm opacity-50 mb-1">
-              Конверт #{step.step_number} из {step.total_steps}
-            </p>
-            <p className="text-sm opacity-70 mt-2">Открой, чтобы узнать сумму</p>
+            {step.status === "skipped" ? (
+              <>
+                <p className="text-sm opacity-50 mb-1">
+                  Пропущенный конверт #{step.step_number} из {step.total_steps}
+                </p>
+                <p className="text-sm opacity-70 mt-2">Верни пропущенный конверт и внеси накопление</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm opacity-50 mb-1">
+                  Конверт #{step.step_number} из {step.total_steps}
+                </p>
+                <p className="text-sm opacity-70 mt-2">Открой, чтобы узнать сумму</p>
+              </>
+            )}
             <div className="mt-4">
               <button onClick={() => router.push(`/step/${step.id}`)} className="btn-primary">
-                Открыть конверт
+                {step.status === "skipped" ? "Вернуть конверт" : "Открыть конверт"}
               </button>
             </div>
           </div>
@@ -260,25 +271,31 @@ function DashboardContent() {
         )}
       </div>
 
-      {recentAchievements.length > 0 && (
+      {isActive && (
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs opacity-50">Достижения</span>
-            <button
-              onClick={() => router.push(selectedGoal ? `/achievements?goalId=${selectedGoal.id}` : "/achievements")}
-              className="text-xs opacity-50 hover:opacity-100"
-            >
-              Все →
-            </button>
+            {recentAchievements.length > 0 && (
+              <button
+                onClick={() => router.push(selectedGoal ? `/achievements?goalId=${selectedGoal.id}` : "/achievements")}
+                className="text-xs opacity-50 hover:opacity-100"
+              >
+                Все →
+              </button>
+            )}
           </div>
-          <div className="flex gap-2">
-            {recentAchievements.map((a) => (
-              <div key={a.code} className="bg-tg-secondary rounded-xl px-3 py-2 text-center flex-1">
-                <span className="text-lg">{a.icon}</span>
-                <p className="text-xs mt-0.5 truncate">{a.title}</p>
-              </div>
-            ))}
-          </div>
+          {recentAchievements.length > 0 ? (
+            <div className="flex gap-2">
+              {recentAchievements.map((a) => (
+                <div key={a.code} className="bg-tg-secondary rounded-xl px-3 py-2 text-center flex-1">
+                  <span className="text-lg">{a.icon}</span>
+                  <p className="text-xs mt-0.5 truncate">{a.title}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs opacity-40 text-center py-2">Открывай конверты — появятся достижения</p>
+          )}
         </div>
       )}
 
