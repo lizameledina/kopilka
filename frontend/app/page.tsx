@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { authenticate, isAuthenticated } from "@/lib/auth";
 import { getInitData, ready, waitForTelegramWebApp } from "@/lib/telegram";
 
+const ONBOARDING_KEY = "kopilka_onboarding_done";
+const isOnboardingDone = () => typeof window !== "undefined" && !!localStorage.getItem(ONBOARDING_KEY);
+
 export default function WelcomePage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
@@ -19,7 +22,7 @@ export default function WelcomePage() {
       ready();
 
       if (isAuthenticated()) {
-        router.push("/dashboard");
+        router.push(isOnboardingDone() ? "/dashboard" : "/onboarding");
         return;
       }
 
@@ -40,7 +43,7 @@ export default function WelcomePage() {
         const success = await authenticate();
         if (cancelled) return;
         if (success) {
-          router.push("/dashboard");
+          router.push(isOnboardingDone() ? "/dashboard" : "/onboarding");
         } else {
           setError("Ошибка авторизации. Откройте приложение через Telegram бот.");
         }
@@ -64,7 +67,7 @@ export default function WelcomePage() {
     try {
       const success = await authenticate();
       if (success) {
-        router.push("/dashboard");
+        router.push(isOnboardingDone() ? "/dashboard" : "/onboarding");
       } else {
         setError("Ошибка авторизации. Откройте приложение через Telegram бот.");
       }
