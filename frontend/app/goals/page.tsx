@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useGoals, useArchiveGoal, useFreezeGoal, useUnfreezeGoal } from "@/lib/hooks";
 import GoalCard from "@/components/GoalCard";
 import GoalActionButton from "@/components/GoalActionButton";
+import ConfirmModal from "@/components/ConfirmModal";
 import { isPausedStatus } from "@/lib/goalUi";
+import type { Goal } from "@/lib/types";
 
 export default function GoalsPage() {
   const router = useRouter();
@@ -14,18 +16,13 @@ export default function GoalsPage() {
   const freezeGoal = useFreezeGoal();
   const unfreezeGoal = useUnfreezeGoal();
   const [actionError, setActionError] = useState<string>("");
+  const [pendingAction, setPendingAction] = useState<{ type: "delete" | "freeze"; goal: Goal } | null>(null);
 
   const activeGoals = goals.filter((g) => g.status === "active");
   const pausedGoals = goals.filter((g) => isPausedStatus(g.status));
   const completedGoals = goals.filter((g) => g.status === "completed");
 
   const canCreate = activeGoals.length < 3;
-
-  const confirmDelete = () =>
-    confirm("Удалить цель? Это действие нельзя отменить.");
-
-  const confirmFreeze = () =>
-    confirm("Заморозить цель? Ты не сможешь вносить накопления, пока не разморозишь её.");
 
   if (isLoading) {
     return (
@@ -86,16 +83,7 @@ export default function GoalsPage() {
                     <GoalActionButton
                       variant="secondary"
                       className="flex-1"
-                      onClick={async () => {
-                        setActionError("");
-                        if (!confirmFreeze()) return;
-                        try {
-                          await freezeGoal.mutateAsync(goal.id);
-                          setActionError("");
-                        } catch (e: any) {
-                          setActionError(e?.message || "Ошибка");
-                        }
-                      }}
+                      onClick={() => setPendingAction({ type: "freeze", goal })}
                       disabled={freezeGoal.isPending}
                     >
                       Заморозить
@@ -103,16 +91,7 @@ export default function GoalsPage() {
                     <GoalActionButton
                       variant="danger"
                       className="flex-1"
-                      onClick={async () => {
-                        setActionError("");
-                        if (!confirmDelete()) return;
-                        try {
-                          await archiveGoal.mutateAsync(goal.id);
-                          setActionError("");
-                        } catch (e: any) {
-                          setActionError(e?.message || "Ошибка");
-                        }
-                      }}
+                      onClick={() => setPendingAction({ type: "delete", goal })}
                       disabled={archiveGoal.isPending}
                     >
                       Удалить
@@ -153,7 +132,6 @@ export default function GoalsPage() {
                         setActionError("");
                         try {
                           await unfreezeGoal.mutateAsync(goal.id);
-                          setActionError("");
                         } catch (e: any) {
                           setActionError(e?.message || "Ошибка");
                         }
@@ -165,16 +143,7 @@ export default function GoalsPage() {
                     <GoalActionButton
                       variant="danger"
                       className="flex-1"
-                      onClick={async () => {
-                        setActionError("");
-                        if (!confirmDelete()) return;
-                        try {
-                          await archiveGoal.mutateAsync(goal.id);
-                          setActionError("");
-                        } catch (e: any) {
-                          setActionError(e?.message || "Ошибка");
-                        }
-                      }}
+                      onClick={() => setPendingAction({ type: "delete", goal })}
                       disabled={archiveGoal.isPending}
                     >
                       Удалить
@@ -203,17 +172,8 @@ export default function GoalsPage() {
                   <div className="flex gap-2">
                     <GoalActionButton
                       variant="danger"
-                      onClick={async () => {
-                        setActionError("");
-                        if (!confirmDelete()) return;
-                        try {
-                          await archiveGoal.mutateAsync(goal.id);
-                          setActionError("");
-                          router.push("/dashboard");
-                        } catch (e: any) {
-                          setActionError(e?.message || "Ошибка");
-                        }
-                      }}
+                      className="flex-1"
+                      onClick={() => setPendingAction({ type: "delete", goal })}
                       disabled={archiveGoal.isPending}
                     >
                       Удалить
@@ -225,6 +185,44 @@ export default function GoalsPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={pendingAction?.type === "delete"}
+        title="Удалить цель?"
+        message="Это действие нельзя отменить."
+        confirmLabel="Удалить"
+        danger
+        onConfirm={async () => {
+          if (!pendingAction) return;
+          const goalId = pendingAction.goal.id;
+          setPendingAction(null);
+          setActionError("");
+          try {
+            await archiveGoal.mutateAsync(goalId);
+          } catch (e: any) {
+            setActionError(e?.message || "Ошибка");
+          }
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
+      <ConfirmModal
+        isOpen={pendingAction?.type === "freeze"}
+        title="Заморозить цель?"
+        message="Ты не сможешь вносить накопления, пока не разморозишь её."
+        confirmLabel="Заморозить"
+        onConfirm={async () => {
+          if (!pendingAction) return;
+          const goalId = pendingAction.goal.id;
+          setPendingAction(null);
+          setActionError("");
+          try {
+            await freezeGoal.mutateAsync(goalId);
+          } catch (e: any) {
+            setActionError(e?.message || "Ошибка");
+          }
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   );
 }

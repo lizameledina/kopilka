@@ -14,6 +14,7 @@ import ProgressBar from "@/components/ProgressBar";
 import FrozenNotice from "@/components/FrozenNotice";
 import GoalStatusBadge from "@/components/GoalStatusBadge";
 import GoalActionButton from "@/components/GoalActionButton";
+import ConfirmModal from "@/components/ConfirmModal";
 import { isPausedStatus } from "@/lib/goalUi";
 
 function getGridCols(total: number): number {
@@ -32,6 +33,7 @@ function ProgressContent() {
   const freezeGoal = useFreezeGoal();
   const unfreezeGoal = useUnfreezeGoal();
   const [actionError, setActionError] = useState<string>("");
+  const [pendingAction, setPendingAction] = useState<"delete" | "freeze" | null>(null);
 
   const numericGoalId = goalId ? Number(goalId) : null;
 
@@ -73,10 +75,6 @@ function ProgressContent() {
   const isPaused = isPausedStatus(progress.status);
   const gridCols = getGridCols(progress.total_steps);
   const pendingSteps = progress.total_steps - progress.completed_steps - progress.skipped_steps;
-
-  const confirmDelete = () => confirm("Удалить цель? Это действие нельзя отменить.");
-  const confirmFreeze = () =>
-    confirm("Заморозить цель? Ты не сможешь вносить накопления, пока не разморозишь её.");
 
   return (
     <div className="flex flex-col min-h-screen px-6 py-8">
@@ -178,16 +176,7 @@ function ProgressContent() {
             <GoalActionButton
               variant="secondary"
               className="flex-1"
-              onClick={async () => {
-                setActionError("");
-                if (!confirmFreeze()) return;
-                try {
-                  await freezeGoal.mutateAsync(numericGoalId);
-                  setActionError("");
-                } catch (e: any) {
-                  setActionError(e?.message || "Ошибка");
-                }
-              }}
+              onClick={() => setPendingAction("freeze")}
               disabled={freezeGoal.isPending}
             >
               Заморозить
@@ -201,7 +190,6 @@ function ProgressContent() {
                 setActionError("");
                 try {
                   await unfreezeGoal.mutateAsync(numericGoalId);
-                  setActionError("");
                 } catch (e: any) {
                   setActionError(e?.message || "Ошибка");
                 }
@@ -211,34 +199,57 @@ function ProgressContent() {
               Разморозить
             </GoalActionButton>
           )}
-        </div>
-        <div className="flex gap-2">
           <GoalActionButton
             variant="danger"
             className="flex-1"
-            onClick={async () => {
-              setActionError("");
-              if (!confirmDelete()) return;
-              try {
-                await archiveGoal.mutateAsync(numericGoalId);
-                setActionError("");
-                router.push("/dashboard");
-              } catch (e: any) {
-                setActionError(e?.message || "Ошибка");
-              }
-            }}
+            onClick={() => setPendingAction("delete")}
             disabled={archiveGoal.isPending}
           >
             Удалить
           </GoalActionButton>
-          <button
-            onClick={() => router.push(`/share?goalId=${progress.goal_id}`)}
-            className="flex-1 py-2 rounded-xl text-sm bg-tg-secondary text-center"
-          >
-            Поделиться
-          </button>
         </div>
+        <button
+          onClick={() => router.push(`/share?goalId=${progress.goal_id}`)}
+          className="w-full py-2 rounded-xl text-sm bg-tg-secondary text-center"
+        >
+          Поделиться
+        </button>
       </div>
+
+      <ConfirmModal
+        isOpen={pendingAction === "delete"}
+        title="Удалить цель?"
+        message="Это действие нельзя отменить."
+        confirmLabel="Удалить"
+        danger
+        onConfirm={async () => {
+          setPendingAction(null);
+          setActionError("");
+          try {
+            await archiveGoal.mutateAsync(numericGoalId);
+            router.push("/goals");
+          } catch (e: any) {
+            setActionError(e?.message || "Ошибка");
+          }
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
+      <ConfirmModal
+        isOpen={pendingAction === "freeze"}
+        title="Заморозить цель?"
+        message="Ты не сможешь вносить накопления, пока не разморозишь её."
+        confirmLabel="Заморозить"
+        onConfirm={async () => {
+          setPendingAction(null);
+          setActionError("");
+          try {
+            await freezeGoal.mutateAsync(numericGoalId);
+          } catch (e: any) {
+            setActionError(e?.message || "Ошибка");
+          }
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   );
 }

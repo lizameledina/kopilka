@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const ONBOARDING_KEY = "kopilka_onboarding_done";
-const isDone = () => typeof window !== "undefined" && !!localStorage.getItem(ONBOARDING_KEY);
-const markDone = () => localStorage.setItem(ONBOARDING_KEY, "1");
+const markDone = () => sessionStorage.setItem(ONBOARDING_KEY, "1");
 
 const SCREENS = [
   {
@@ -47,7 +46,7 @@ export default function OnboardingPage() {
 
   const handleFinish = () => {
     markDone();
-    router.push("/create-goal");
+    router.push("/dashboard");
   };
 
   const screen = SCREENS[step];

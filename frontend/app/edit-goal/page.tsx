@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGoals, useEditGoalPreview, useEditGoal, useResetGoal } from "@/lib/hooks";
 import { kopecksToRubles, rublesToKopecks } from "@/lib/format";
+import ConfirmModal from "@/components/ConfirmModal";
 import type { DistributionType, EditPreviewResponse } from "@/lib/types";
 
 const DISTRIBUTIONS: { value: DistributionType; label: string }[] = [
@@ -254,36 +255,23 @@ function EditGoalContent() {
         </button>
       )}
 
-      <div className="mt-8 border-t border-white/10 pt-6">
-        <p className="text-xs opacity-50 mb-3">Опасные действия</p>
-        <button
-          onClick={() => setShowResetConfirm(true)}
-          disabled={isLoading}
-          className="w-full py-3 rounded-xl text-sm font-medium text-red-400 border border-red-400/30 hover:bg-red-400/10 transition-colors"
-        >
-          Начать с нуля
-        </button>
-        <p className="text-xs opacity-40 mt-2 text-center">
-          Удалит весь прогресс и достижения этой цели
-        </p>
-      </div>
+      <button
+        onClick={() => setShowResetConfirm(true)}
+        disabled={isLoading}
+        className="mt-6 w-full py-3 rounded-xl text-sm font-medium text-red-400 border border-red-400/30 hover:bg-red-400/10 transition-colors"
+      >
+        Начать с нуля
+      </button>
 
-      {showResetConfirm && (
-        <div className="fixed inset-0 bg-black/60 flex items-end z-50" onClick={() => setShowResetConfirm(false)}>
-          <div className="w-full bg-tg-secondary rounded-t-2xl p-6" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold mb-2">Начать с нуля?</h2>
-            <p className="text-sm opacity-60 mb-6">
-              Весь прогресс, депозиты и достижения этой цели будут удалены. Отменить нельзя.
-            </p>
-            <button onClick={handleReset} className="w-full py-3 rounded-xl bg-red-500 text-white font-semibold mb-3">
-              Да, сбросить
-            </button>
-            <button onClick={() => setShowResetConfirm(false)} className="w-full py-3 rounded-xl btn-secondary">
-              Отмена
-            </button>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        title="Начать с нуля?"
+        message="Прогресс и конверты будут сброшены."
+        confirmLabel="Начать заново"
+        danger
+        onConfirm={handleReset}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   );
 }
