@@ -15,7 +15,7 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const { data: allGoals = [], isLoading: goalsLoading } = useGoals();
+  const { data: allGoals = [], isLoading: goalsLoading, isFetching: goalsFetching } = useGoals();
   const { data: todaySteps = [], isLoading: stepsLoading } = useTodaySteps();
   const { data: streak } = useStreak();
   const { data: achievements = [] } = useAchievements();
@@ -42,7 +42,7 @@ function DashboardContent() {
     }
   }, [goals, selectedGoalId]);
 
-  if (goalsLoading) {
+  if (goalsLoading || (goalsFetching && allGoals.length === 0)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="opacity-50">Загрузка...</p>

@@ -70,6 +70,8 @@ class StepActionResponse(BaseModel):
     id: int
     status: str
     newly_unlocked: list[AchievementItem] = []
+    goal_completed: bool = False
+    goal_id: int | None = None
 
 
 class ProgressResponse(BaseModel):

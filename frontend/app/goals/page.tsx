@@ -75,15 +75,17 @@ export default function GoalsPage() {
                   router.push(`/progress?goalId=${goal.id}`);
                 }}
                 actions={
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <GoalActionButton
                       variant="secondary"
+                      className="w-full"
                       onClick={() => router.push(`/edit-goal?goalId=${goal.id}`)}
                     >
                       Редактировать
                     </GoalActionButton>
                     <GoalActionButton
                       variant="secondary"
+                      className="w-full"
                       onClick={async () => {
                         setActionError("");
                         if (!confirmFreeze()) return;
@@ -100,6 +102,7 @@ export default function GoalsPage() {
                     </GoalActionButton>
                     <GoalActionButton
                       variant="danger"
+                      className="w-full"
                       onClick={async () => {
                         setActionError("");
                         if (!confirmDelete()) return;
@@ -135,15 +138,17 @@ export default function GoalsPage() {
                   router.push(`/progress?goalId=${goal.id}`);
                 }}
                 actions={
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <GoalActionButton
                       variant="secondary"
+                      className="w-full"
                       onClick={() => router.push(`/edit-goal?goalId=${goal.id}`)}
                     >
                       Редактировать
                     </GoalActionButton>
                     <GoalActionButton
                       variant="primary"
+                      className="w-full"
                       onClick={async () => {
                         setActionError("");
                         try {
@@ -159,6 +164,7 @@ export default function GoalsPage() {
                     </GoalActionButton>
                     <GoalActionButton
                       variant="danger"
+                      className="w-full"
                       onClick={async () => {
                         setActionError("");
                         if (!confirmDelete()) return;

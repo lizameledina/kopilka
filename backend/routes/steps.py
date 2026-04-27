@@ -6,7 +6,7 @@ from database import get_db
 from models import User, Goal, ChallengeStep
 from routes.deps import get_current_user
 from schemas import StepResponse, StepActionResponse, TodayStepItem, AchievementItem
-from services.events import emit_pending
+from services.events import emit_pending, EVENT_GOAL_COMPLETED
 from services.goal_rules import can_mutate_steps, is_paused
 from services.goals import get_goal
 from services.steps import get_today_steps_for_user, get_step_by_id, complete_step, skip_step
@@ -110,11 +110,14 @@ async def complete_step_endpoint(
     await emit_pending(events)
 
     newly_unlocked = await get_achievements_unlocked_since(db, current_user.id, request_start)
+    goal_completed = any(e.name == EVENT_GOAL_COMPLETED for e in events)
 
     return StepActionResponse(
         id=completed.id,
         status=completed.status.value,
         newly_unlocked=[AchievementItem(**a) for a in newly_unlocked],
+        goal_completed=goal_completed,
+        goal_id=step.goal_id if goal_completed else None,
     )
 
 

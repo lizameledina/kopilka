@@ -8,7 +8,6 @@ from services.events import on, emit, EVENT_STEP_COMPLETED, EVENT_SKIPPED_STEP_C
 from services.step_counts import get_step_counts
 
 ACHIEVEMENTS_USER = {
-    "first_step": {"title": "Первый шаг", "description": "Завершить первый конверт", "icon": "🎯"},
     "streak_3": {"title": "Серия 3 дня", "description": "3 дня подряд", "icon": "🔥"},
     "streak_7": {"title": "Серия 7 дней", "description": "7 дней подряд", "icon": "⚡"},
     "streak_30": {"title": "Месяц силы", "description": "30 дней подряд", "icon": "💪"},
@@ -18,6 +17,7 @@ ACHIEVEMENTS_USER = {
 }
 
 ACHIEVEMENTS_GOAL = {
+    "first_step": {"title": "Первый шаг", "description": "Завершить первый конверт", "icon": "🎯"},
     "steps_5": {"title": "Пятёрка", "description": "Завершить 5 конвертов", "icon": "✋"},
     "steps_10": {"title": "Десятка", "description": "Завершить 10 конвертов", "icon": "🔟"},
     "goal_25": {"title": "Четверть пути", "description": "Накопить 25% от цели", "icon": "🌿"},
@@ -157,9 +157,6 @@ async def _check_user_achievements(db: AsyncSession, user_id: int) -> list[tuple
     streak_result = await db.execute(select(UserStreak).where(UserStreak.user_id == user_id))
     streak = streak_result.scalar_one_or_none()
 
-    if await _try_unlock(db, user_id, "first_step"):
-        unlocked.append((user_id, "first_step", None))
-
     if streak and streak.current_streak >= 3:
         if await _try_unlock(db, user_id, "streak_3"):
             unlocked.append((user_id, "streak_3", None))
@@ -190,6 +187,9 @@ async def _check_goal_achievements(db: AsyncSession, user_id: int, goal_id: int)
     unlocked: list[tuple[int, str, int | None]] = []
     counts = await get_step_counts(db, goal_id)
 
+    if counts["completed"] >= 1:
+        if await _try_unlock(db, user_id, "first_step", goal_id):
+            unlocked.append((user_id, "first_step", goal_id))
     if counts["completed"] >= 5:
         if await _try_unlock(db, user_id, "steps_5", goal_id):
             unlocked.append((user_id, "steps_5", goal_id))

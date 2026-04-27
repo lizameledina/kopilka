@@ -9,11 +9,13 @@ export default function GoalActionButton({
   children,
   onClick,
   disabled,
+  className,
 }: {
   variant: Variant;
   children: React.ReactNode;
   onClick: () => void;
   disabled?: boolean;
+  className?: string;
 }) {
   const base =
     "px-3 py-2 rounded-xl text-sm font-semibold transition-opacity active:scale-95";
@@ -31,7 +33,7 @@ export default function GoalActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`${base} ${styles[variant]} ${disabled ? "opacity-60" : "hover:opacity-100 opacity-90"}`}
+      className={`${base} ${styles[variant]} ${disabled ? "opacity-60" : "hover:opacity-100 opacity-90"} ${className ?? ""}`}
     >
       {children}
     </button>

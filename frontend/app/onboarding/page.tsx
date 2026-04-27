@@ -54,7 +54,7 @@ export default function OnboardingPage() {
   const isLast = step === SCREENS.length - 1;
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen px-6 py-12 text-center">
+    <div className="relative flex flex-col items-center min-h-screen px-6 pt-20 pb-8 text-center">
       <button
         onClick={handleSkip}
         className="absolute top-6 right-6 text-sm opacity-40 hover:opacity-70 transition-opacity"

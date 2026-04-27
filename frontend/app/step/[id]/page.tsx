@@ -36,8 +36,12 @@ export default function StepPage() {
   const handleComplete = async () => {
     try {
       setActionError("");
-      await completeStep.mutateAsync(step.id);
-      router.push("/dashboard");
+      const data = await completeStep.mutateAsync(step.id);
+      if (data.goal_completed && data.goal_id) {
+        router.push(`/completion?goalId=${data.goal_id}`);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (e: any) {
       setActionError(e.message || "Ошибка");
     }
